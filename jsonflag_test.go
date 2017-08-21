@@ -1,6 +1,7 @@
 package jsonflag
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"os"
 	"reflect"
@@ -24,6 +25,18 @@ func TestLiteralInput(t *testing.T) {
 	// Bad JSON
 	if err := flg.Set(`{"foo": "bar`); err == nil {
 		t.Fatalf("Expected set to fail")
+	}
+
+	// UseNumber
+	flg.UseNumber = true
+	if err := flg.Set(`{"foo": 1}`); err != nil {
+		t.Fatalf("Execpted set to succeed but got: %v", err)
+	}
+	expected = map[string]interface{}{
+		"foo": json.Number("1"),
+	}
+	if flg.Value == nil || !reflect.DeepEqual(*flg.Value, expected) {
+		t.Fatalf("Expected set value to be %v but got: %v", expected, flg.Value)
 	}
 
 }

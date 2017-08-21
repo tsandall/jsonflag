@@ -25,7 +25,8 @@ import (
 //	$ cmd --my-flag @filename.json
 //	$ cmd --my-flag '{"foo": "bar"}'
 type Var struct {
-	Value *interface{}
+	UseNumber bool         // Use json.Number for numerics
+	Value     *interface{} // Loaded value
 }
 
 // Set sets the flag from the string s.
@@ -44,8 +45,13 @@ func (flg *Var) Set(s string) error {
 	} else {
 		bs = []byte(s)
 	}
+	buf := bytes.NewBuffer(bs)
+	decoder := json.NewDecoder(buf)
+	if flg.UseNumber {
+		decoder.UseNumber()
+	}
 	var v interface{}
-	if err := json.Unmarshal(bs, &v); err != nil {
+	if err := decoder.Decode(&v); err != nil {
 		return err
 	}
 	flg.Value = &v
